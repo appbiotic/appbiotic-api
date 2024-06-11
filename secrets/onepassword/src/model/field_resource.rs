@@ -11,23 +11,9 @@ use crate::OnePasswordError;
     serde(rename_all = "snake_case")
 )]
 pub struct FieldResource {
-    vault: String,
-    item: String,
-    field: String,
-}
-
-impl FieldResource {
-    pub fn vault(&self) -> &str {
-        &self.vault
-    }
-
-    pub fn item(&self) -> &str {
-        &self.item
-    }
-
-    pub fn field(&self) -> &str {
-        &self.field
-    }
+    pub vault: String,
+    pub item: String,
+    pub field: String,
 }
 
 fn re() -> &'static Regex {

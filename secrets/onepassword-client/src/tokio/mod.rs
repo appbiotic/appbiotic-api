@@ -2,7 +2,7 @@ use std::{process::Stdio, sync::Arc};
 
 use appbiotic_api_secrets_onepassword::{
     Api, ApiVersion, ApiVersionRequest, ApiVersionResponse, ItemGetRequest, ItemGetResponse,
-    OnePassword, OnePasswordError, UserGetRequest, UserGetResponse,
+    OnePassword, OnePasswordError, ReadRequest, ReadResponse, UserGetRequest, UserGetResponse,
 };
 use async_trait::async_trait;
 use tokio::io::AsyncWriteExt;
@@ -55,6 +55,16 @@ impl OnePassword for OnePasswordClient {
             )
             .await?;
         Ok(ItemGetResponse { item })
+    }
+
+    async fn read(&self, request: ReadRequest) -> Result<ReadResponse, OnePasswordError> {
+        Ok(ReadResponse {
+            content: self
+                .op_exec_text(["read", &request.resource.to_string()], None)
+                .await?
+                .trim()
+                .into(),
+        })
     }
 
     async fn user_get(&self, request: UserGetRequest) -> Result<UserGetResponse, OnePasswordError> {

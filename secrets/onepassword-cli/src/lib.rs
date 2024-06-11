@@ -7,6 +7,7 @@ use clap::{command, ArgMatches, Command};
 
 pub mod api_version;
 pub mod item_get;
+pub mod read;
 pub mod user_get_me;
 
 pub fn cli() -> Command {
@@ -17,6 +18,7 @@ pub fn cli() -> Command {
         .arg(args::service_account_token().required(true))
         .subcommand(api_version::cmd())
         .subcommand(item_get::cmd())
+        .subcommand(read::cmd())
         .subcommand(user_get_me::cmd())
 }
 
@@ -33,6 +35,8 @@ pub async fn exec(matches: &ArgMatches) -> anyhow::Result<()> {
         api_version::exec(matches, client).await
     } else if let Some(matches) = matches.subcommand_matches(item_get::NAME) {
         item_get::exec(matches, client).await
+    } else if let Some(matches) = matches.subcommand_matches(read::NAME) {
+        read::exec(matches, client).await
     } else if let Some(matches) = matches.subcommand_matches(user_get_me::NAME) {
         user_get_me::exec(matches, client).await
     } else {
