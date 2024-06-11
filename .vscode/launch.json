@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "appbiotic-api-secrets-onepassword [unit tests]",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=appbiotic-api-secrets-onepassword"
+                ],
+                "filter": {
+                    "name": "appbiotic-api-secrets-onepassword",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "appbiotic-api-secrets-onepassword-cli",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=appbiotic-api-secrets-onepassword-cli",
+                    "--package=appbiotic-api-secrets-onepassword-cli"
+                ],
+                "filter": {
+                    "name": "appbiotic-api-secrets-onepassword-cli",
+                    "kind": "bin"
+                }
+            },
+            "args": [
+                "user-get-me"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "ONEPASSWORD_SERVICE_ACCOUNT_TOKEN_FILE": ".local/secrets/onepassword-service-account-token"
+            }
+        }
+    ]
+}
