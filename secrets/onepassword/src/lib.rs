@@ -7,7 +7,11 @@ pub use model::*;
 #[cfg(feature = "async")]
 #[async_trait::async_trait]
 pub trait OnePassword {
-    async fn api_version(&self) -> Result<ApiVersion, OnePasswordError>;
-    async fn item_get(&self, vault_id: String, item_id: String) -> Result<Item, OnePasswordError>;
-    async fn user_get_me(&self) -> Result<User, OnePasswordError>;
+    async fn api_version(
+        &self,
+        request: ApiVersionRequest,
+    ) -> Result<ApiVersionResponse, OnePasswordError>;
+    async fn item_get(&self, request: ItemGetRequest) -> Result<ItemGetResponse, OnePasswordError>;
+    async fn read(&self, request: ReadRequest) -> Result<ReadResponse, OnePasswordError>;
+    async fn user_get(&self, request: UserGetRequest) -> Result<UserGetResponse, OnePasswordError>;
 }

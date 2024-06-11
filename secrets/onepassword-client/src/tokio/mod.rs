@@ -1,12 +1,16 @@
 use std::{process::Stdio, sync::Arc};
 
 use appbiotic_api_secrets_onepassword::{
-    Api, ApiVersion, Item, OnePassword, OnePasswordError, User,
+    Api, ApiVersion, ApiVersionRequest, ApiVersionResponse, ItemGetRequest, ItemGetResponse,
+    OnePassword, OnePasswordError, ReadRequest, ReadResponse, UserGetRequest, UserGetResponse,
 };
 use async_trait::async_trait;
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
+pub mod sync;
+
+#[derive(Clone)]
 pub struct OnePasswordClient {
     service_token: Arc<String>,
 }
@@ -21,33 +25,53 @@ impl OnePasswordClient {
 
 #[async_trait]
 impl OnePassword for OnePasswordClient {
-    async fn api_version(&self) -> Result<ApiVersion, OnePasswordError> {
-        Ok(ApiVersion {
-            api: Api::Cli,
-            version: self
-                .op_exec_text(["--version"], None)
-                .await?
-                .trim()
-                .to_owned(),
+    async fn api_version(
+        &self,
+        _request: ApiVersionRequest,
+    ) -> Result<ApiVersionResponse, OnePasswordError> {
+        Ok(ApiVersionResponse {
+            api_version: ApiVersion {
+                api: Api::Cli,
+                version: self
+                    .op_exec_text(["--version"], None)
+                    .await?
+                    .trim()
+                    .to_owned(),
+            },
         })
     }
 
-    async fn item_get(&self, vault_id: String, item_id: String) -> Result<Item, OnePasswordError> {
-        self.op_exec_json(
-            [
-                "item",
-                "get",
-                "--vault",
-                vault_id.as_str(),
-                item_id.as_str(),
-            ],
-            None,
-        )
-        .await
+    async fn item_get(&self, request: ItemGetRequest) -> Result<ItemGetResponse, OnePasswordError> {
+        let item = self
+            .op_exec_json(
+                [
+                    "item",
+                    "get",
+                    "--vault",
+                    &request.resource.vault,
+                    &request.resource.item,
+                ],
+                None,
+            )
+            .await?;
+        Ok(ItemGetResponse { item })
     }
 
-    async fn user_get_me(&self) -> Result<User, OnePasswordError> {
-        self.op_exec_json(["user", "get", "--me"], None).await
+    async fn read(&self, request: ReadRequest) -> Result<ReadResponse, OnePasswordError> {
+        Ok(ReadResponse {
+            content: self
+                .op_exec_text(["read", &request.resource.to_string()], None)
+                .await?
+                .trim()
+                .into(),
+        })
+    }
+
+    async fn user_get(&self, request: UserGetRequest) -> Result<UserGetResponse, OnePasswordError> {
+        let user = match request {
+            UserGetRequest::Me => self.op_exec_json(["user", "get", "--me"], None).await?,
+        };
+        Ok(UserGetResponse { user })
     }
 }
 
