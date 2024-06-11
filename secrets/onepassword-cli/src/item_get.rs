@@ -1,7 +1,7 @@
 use std::io::{stdout, BufWriter};
 
 use anyhow::Context;
-use appbiotic_api_secrets_onepassword::OnePassword;
+use appbiotic_api_secrets_onepassword::{ItemGetRequest, ItemResource, OnePassword};
 use clap::{ArgMatches, Command};
 
 pub static NAME: &str = "item-get";
@@ -16,7 +16,14 @@ pub fn cmd() -> Command {
 pub async fn exec(matches: &ArgMatches, client: Box<dyn OnePassword>) -> anyhow::Result<()> {
     let vault = matches.get_one::<String>(args::VAULT).unwrap();
     let item = matches.get_one::<String>(args::ITEM).unwrap();
-    let value = client.item_get(vault.to_string(), item.to_string()).await?;
+    let value = client
+        .item_get(ItemGetRequest {
+            resource: ItemResource {
+                vault: vault.to_string(),
+                item: item.to_string(),
+            },
+        })
+        .await?;
     serde_json::to_writer_pretty(BufWriter::new(stdout()), &value)
         .context("Failed to write user JSON")
 }
