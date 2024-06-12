@@ -1,8 +1,9 @@
 use std::{process::Stdio, sync::Arc};
 
 use appbiotic_api_secrets_onepassword::{
-    Api, ApiVersion, ApiVersionRequest, ApiVersionResponse, ItemGetRequest, ItemGetResponse,
-    OnePassword, OnePasswordError, ReadRequest, ReadResponse, UserGetRequest, UserGetResponse,
+    Api, ApiVersion, ApiVersionRequest, ApiVersionResponse, DocumentCreateRequest,
+    DocumentCreateResponse, ItemGetRequest, ItemGetResponse, OnePassword, OnePasswordError,
+    ReadRequest, ReadResponse, UserGetRequest, UserGetResponse,
 };
 use async_trait::async_trait;
 use tokio::io::AsyncWriteExt;
@@ -39,6 +40,28 @@ impl OnePassword for OnePasswordClient {
                     .to_owned(),
             },
         })
+    }
+
+    async fn document_create(
+        &self,
+        request: DocumentCreateRequest,
+    ) -> Result<DocumentCreateResponse, OnePasswordError> {
+        let response = self
+            .op_exec_json(
+                [
+                    "document",
+                    "create",
+                    "--file-name",
+                    &request.file_name,
+                    "--title",
+                    &request.title,
+                    "--vault",
+                    &request.vault,
+                ],
+                Some(request.data),
+            )
+            .await?;
+        Ok(response)
     }
 
     async fn item_get(&self, request: ItemGetRequest) -> Result<ItemGetResponse, OnePasswordError> {
