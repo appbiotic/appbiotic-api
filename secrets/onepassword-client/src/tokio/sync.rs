@@ -1,6 +1,7 @@
 use appbiotic_api_secrets_onepassword::{
-    ApiVersionRequest, ApiVersionResponse, ItemGetRequest, ItemGetResponse, OnePassword,
-    OnePasswordError, ReadRequest, ReadResponse, UserGetRequest, UserGetResponse,
+    ApiVersionRequest, ApiVersionResponse, DocumentCreateRequest, DocumentCreateResponse,
+    ItemGetRequest, ItemGetResponse, OnePassword, OnePasswordError, ReadRequest, ReadResponse,
+    UserGetRequest, UserGetResponse,
 };
 use async_trait::async_trait;
 use tokio::sync::{mpsc, oneshot};
@@ -31,6 +32,28 @@ impl OnePassword for OnePasswordClientHandle {
             response.try_recv().map_err(RecvError::from)?
         }
         .instrument(info_span!("api_version"))
+        .await
+        .map_err(OnePasswordError::into)
+    }
+
+    async fn document_create(
+        &self,
+        request: DocumentCreateRequest,
+    ) -> Result<DocumentCreateResponse, OnePasswordError> {
+        let (respond_to, mut response) = oneshot::channel();
+        let command = OnePasswordCommand::DocumentCreate {
+            request,
+            respond_to,
+        };
+        async move {
+            let _ = self
+                .commands_tx
+                .send(command)
+                .await
+                .map_err(SendError::from)?;
+            response.try_recv().map_err(RecvError::from)?
+        }
+        .instrument(info_span!("item_get"))
         .await
         .map_err(OnePasswordError::into)
     }
@@ -98,6 +121,10 @@ enum OnePasswordCommand {
         request: ApiVersionRequest,
         respond_to: oneshot::Sender<Result<ApiVersionResponse, OnePasswordError>>,
     },
+    DocumentCreate {
+        request: DocumentCreateRequest,
+        respond_to: oneshot::Sender<Result<DocumentCreateResponse, OnePasswordError>>,
+    },
     ItemGet {
         request: ItemGetRequest,
         respond_to: oneshot::Sender<Result<ItemGetResponse, OnePasswordError>>,
@@ -136,6 +163,12 @@ impl OnePasswordClient {
                     respond_to,
                 } => {
                     let _ = respond_to.send(self.client.api_version(request).await);
+                }
+                OnePasswordCommand::DocumentCreate {
+                    request,
+                    respond_to,
+                } => {
+                    let _ = respond_to.send(self.client.document_create(request).await);
                 }
                 OnePasswordCommand::ItemGet {
                     request,

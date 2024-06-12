@@ -6,6 +6,7 @@ use appbiotic_api_secrets_onepassword_client::tokio::OnePasswordClient;
 use clap::{command, ArgMatches, Command};
 
 pub mod api_version;
+pub mod document_create;
 pub mod item_get;
 pub mod read;
 pub mod user_get_me;
@@ -17,6 +18,7 @@ pub fn cli() -> Command {
         .arg_required_else_help(true)
         .arg(args::service_account_token().required(true))
         .subcommand(api_version::cmd())
+        .subcommand(document_create::cmd())
         .subcommand(item_get::cmd())
         .subcommand(read::cmd())
         .subcommand(user_get_me::cmd())
@@ -33,6 +35,8 @@ pub async fn exec(matches: &ArgMatches) -> anyhow::Result<()> {
 
     if let Some(matches) = matches.subcommand_matches(api_version::NAME) {
         api_version::exec(matches, client).await
+    } else if let Some(matches) = matches.subcommand_matches(document_create::NAME) {
+        document_create::exec(matches, client).await
     } else if let Some(matches) = matches.subcommand_matches(item_get::NAME) {
         item_get::exec(matches, client).await
     } else if let Some(matches) = matches.subcommand_matches(read::NAME) {
