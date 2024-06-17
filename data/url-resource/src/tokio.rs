@@ -388,7 +388,7 @@ mod test {
 
     #[tokio::test]
     async fn file_resource() {
-        let temp_dir = tempdir::TempDir::new("file_resource").unwrap();
+        let temp_dir = tempfile::TempDir::new().unwrap();
         let file_path = temp_dir.path().join("hello.txt");
 
         let config = config::UrlResource {
@@ -423,7 +423,7 @@ mod test {
     async fn ttl_works() {
         let cache_ttl_millis = Duration::from_millis(1000);
 
-        let temp_dir = tempdir::TempDir::new("file_resource").unwrap();
+        let temp_dir = tempfile::TempDir::new().unwrap();
         let file_path = temp_dir.path().join("hello.txt");
 
         let config = config::UrlResource {
