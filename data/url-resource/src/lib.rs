@@ -19,4 +19,5 @@ pub trait UrlResourceFetch {
 #[derive(Clone)]
 pub struct UrlResourceContent {
     pub data: Bytes,
+    pub hash: Option<String>,
 }

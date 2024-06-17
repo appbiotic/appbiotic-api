@@ -68,6 +68,8 @@ impl UrlResource {
 
         let actor = UrlResourceActor {
             url: config.url.clone(),
+            #[cfg(feature = "sha256")]
+            hash: config.hash,
             commands_tx: commands_tx.clone(),
             commands_rx,
             watch_tx,
@@ -141,6 +143,8 @@ impl UrlResourceFetch for UrlResource {
 
 struct UrlResourceActor {
     url: Url,
+    #[cfg(feature = "sha256")]
+    hash: Option<config::UrlResourceHash>,
     commands_tx: mpsc::Sender<UrlResourceCommand>,
     commands_rx: mpsc::Receiver<UrlResourceCommand>,
     watch_tx: watch::Sender<FetchStatus>,
@@ -223,6 +227,8 @@ impl UrlResourceActor {
                     }
 
                     let url = self.url.clone();
+                    #[cfg(feature = "sha256")]
+                    let hash = self.hash.clone();
                     let watch_tx = self.watch_tx.clone();
                     let commands_tx = self.commands_tx.clone();
                     let ttl = self.ttl;
@@ -231,7 +237,14 @@ impl UrlResourceActor {
                         let scheme = tracing_url.scheme();
                         let span = info_span!("fetch_url", scheme, url = tracing_url.as_str());
 
-                        let result = fetch_url(url).instrument(span).await.inspect_err(|err| {
+                        let result = fetch_url(
+                            url,
+                            #[cfg(feature = "sha256")]
+                            hash,
+                        )
+                        .instrument(span)
+                        .await
+                        .inspect_err(|err| {
                             error!(
                                 error = err.to_string(),
                                 url = tracing_url.as_str(),
@@ -267,8 +280,11 @@ impl UrlResourceActor {
     }
 }
 
-async fn fetch_url(url: Url) -> Result<UrlResourceContent, UrlResourceError> {
-    match url.scheme() {
+async fn fetch_url(
+    url: Url,
+    #[cfg(feature = "sha256")] hash: Option<config::UrlResourceHash>,
+) -> Result<UrlResourceContent, UrlResourceError> {
+    let data = match url.scheme() {
         "file" => {
             let file_path = url.to_file_path().map_err(|_| {
                 UrlResourceError::new_failed_precondition(format!(
@@ -295,12 +311,22 @@ async fn fetch_url(url: Url) -> Result<UrlResourceContent, UrlResourceError> {
                 .await
                 .map_err(|err| UrlResourceError::new_resource_read_error(err.to_string()))?;
 
-            Ok(UrlResourceContent {
-                data: Bytes::from(data),
-            })
+            data
         }
-        scheme => Err(UrlResourceError::new_unsupported_scheme(scheme.to_owned())),
-    }
+        scheme => return Err(UrlResourceError::new_unsupported_scheme(scheme.to_owned())),
+    };
+
+    // NOTE: Could be doing hash in parallel with download.
+    #[cfg(feature = "sha256")]
+    let hash = hash.map(|hash| match hash {
+        config::UrlResourceHash::Sha256 => format!("sha256:{}", sha256::digest(&data)),
+    });
+
+    Ok(UrlResourceContent {
+        data: Bytes::from(data),
+        #[cfg(feature = "sha256")]
+        hash,
+    })
 }
 
 impl<T> From<mpsc::error::SendError<T>> for UrlResourceError {
@@ -344,6 +370,7 @@ mod test {
         let config = config::UrlResource {
             url: Url::parse("ftp://example.com/hello.txt").unwrap(),
             cache_ttl: Some(Duration::from_secs(60)),
+            hash: None,
             provider: config::UrlResourceProvider::Tokio(TokioUrlResourceProvider {
                 mpsc_channel_size: None,
             }),
@@ -367,6 +394,7 @@ mod test {
         let config = config::UrlResource {
             url: Url::from_file_path(&file_path).unwrap(),
             cache_ttl: Some(Duration::from_secs(60)),
+            hash: Some(config::UrlResourceHash::Sha256),
             provider: config::UrlResourceProvider::Tokio(TokioUrlResourceProvider {
                 mpsc_channel_size: None,
             }),
@@ -375,6 +403,8 @@ mod test {
         let url_resource = UrlResource::new(config).unwrap();
 
         let file_content = "Hello, world!\n";
+        let expected_hash =
+            "sha256:d9014c4624844aa5bac314773d6b689ad467fa4e1d1a50a1b8a99d5a95f72ff5";
 
         write(&file_path, file_content.as_bytes()).await.unwrap();
 
@@ -385,6 +415,7 @@ mod test {
             String::from_utf8(content.data.to_vec()).unwrap(),
             file_content
         );
+        assert_eq!(content.hash.as_deref(), Some(expected_hash));
     }
 
     #[traced_test]
@@ -398,6 +429,7 @@ mod test {
         let config = config::UrlResource {
             url: Url::from_file_path(&file_path).unwrap(),
             cache_ttl: Some(cache_ttl_millis.to_owned()),
+            hash: None,
             provider: config::UrlResourceProvider::Tokio(TokioUrlResourceProvider {
                 mpsc_channel_size: None,
             }),

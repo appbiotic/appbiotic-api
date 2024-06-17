@@ -24,6 +24,13 @@ pub struct UrlResource {
     )]
     pub cache_ttl: Option<Duration>,
 
+    #[cfg(feature = "sha256")]
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub hash: Option<UrlResourceHash>,
+
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub provider: UrlResourceProvider,
 }
@@ -40,6 +47,17 @@ pub struct UrlResource {
 )]
 pub enum UrlResourceProvider {
     Tokio(TokioUrlResourceProvider),
+}
+
+#[cfg(feature = "sha256")]
+#[derive(Clone, Debug)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(rename_all = "UPPERCASE")
+)]
+pub enum UrlResourceHash {
+    Sha256,
 }
 
 #[derive(Debug)]
