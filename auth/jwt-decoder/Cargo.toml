@@ -1,0 +1,40 @@
+[package]
+name = "appbiotic-auth-jwt-decoder"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["crypto"]
+crypto = ["rsa/pem"]
+
+[dependencies]
+appbiotic-data-url-resource = { version = "0.1.0", path = "../../data/url-resource" }
+async-trait = "0.1.80"
+bytes = "1.6.0"
+cached = { version = "0.51.4", features = ["tokio"] }
+dashmap = "5.5.3"
+derive-new = "0.6.0"
+futures = "0.3.30"
+indexmap = "2.2.6"
+jsonwebtoken = "9.3.0"
+rand = "0.8.5"
+reqwest = "0.12.4"
+rsa = { version = "0.9", default-features = false, optional = true }
+serde = "1.0.203"
+serde_json = "1.0.117"
+serde_with = "3.8.1"
+strum = { version = "0.26.2", features = ["derive"] }
+strum_macros = "0.26.4"
+thiserror = "1.0.61"
+tokio = "1.38.0"
+tracing = "0.1.40"
+url = "2.5.1"
+
+[dev-dependencies]
+base64 = "0.22.1"
+jose-jwa = "0.1.2"
+jose-jwk = "0.1.2"
+jose-jwt = "0.0.0"
+tempfile = "3.10.1"
+tokio = { version = "1.38.0", features = ["macros", "rt", "test-util"] }
+tracing-test = "0.2.5"
