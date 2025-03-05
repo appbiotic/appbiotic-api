@@ -1,0 +1,22 @@
+version = 2
+
+[[dependencies]]
+name = "googleapis"
+url = "github.com/googleapis/googleapis"
+protocol = "https"
+revision = "2d05911be5a468b556236bee537c91922f9c23a3"
+commit_hash = "2d05911be5a468b556236bee537c91922f9c23a3"
+
+[[dependencies]]
+name = "grpc"
+url = "github.com/grpc/grpc"
+protocol = "https"
+revision = "v1.67.1"
+commit_hash = "d3286610f703a339149c3f9be69f0d7d0abb130a"
+
+[[dependencies]]
+name = "protobuf"
+url = "github.com/protocolbuffers/protobuf"
+protocol = "https"
+revision = "v28.3"
+commit_hash = "5fda5abda3dee5f7a102c85860594bff8d8610bd"

@@ -1,0 +1,24 @@
+name = "code-workspaces"
+description = "Appbiotic Protos"
+proto_out_dir = "protos"
+
+[googleapis]
+url = "github.com/googleapis/googleapis"
+protocol = "https"
+revision = "2d05911be5a468b556236bee537c91922f9c23a3"
+allow_policies = ["google/api/*", "google/longrunning/*", "google/rpc/*"]
+
+[grpc]
+url = "github.com/grpc/grpc"
+revision = "v1.67.1"
+protocol = "https"
+transitive = true
+allow_policies = ["grpc/*"]
+content_roots = ["src/proto"]
+
+[protobuf]
+url = "github.com/protocolbuffers/protobuf"
+protocol = "https"
+revision = "v28.3"
+allow_policies = ["google/protobuf/*"]
+content_roots = ["src"]
