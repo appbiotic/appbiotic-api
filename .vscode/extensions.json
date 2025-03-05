@@ -1,7 +1,9 @@
 {
     "recommendations": [
+        "davidanson.vscode-markdownlint",
+        "rust-lang.rust-analyzer",
         "tamasfe.even-better-toml",
         "vadimcn.vscode-lldb",
-        "rust-lang.rust-analyzer"
+        "yzhang.markdown-all-in-one"
     ]
 }

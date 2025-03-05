@@ -1,0 +1,78 @@
+[package]
+name = "appbiotic-api-google-protobuf-descriptor"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["prost-serde"]
+prost-serde = [
+    "dep:serde",
+    "dep:prost",
+    "dep:prost-types",
+    "dep:prost-wkt",
+    "dep:prost-wkt-types",
+    "dep:tonic",
+]
+
+[dependencies.prost]
+version = "0.13.5"
+optional = true
+features = []
+
+[dependencies.prost-types]
+version = "0.13.5"
+optional = true
+features = []
+
+[dependencies.prost-wkt]
+version = "0.6.0"
+optional = true
+features = []
+
+[dependencies.prost-wkt-types]
+version = "0.6.0"
+optional = true
+features = []
+
+[dependencies.serde]
+version = "1.0.218"
+optional = true
+features = [
+    "derive",
+    "std",
+]
+
+[dependencies.tonic]
+version = "0.12.3"
+optional = true
+features = []
+
+[build-dependencies.anyhow]
+version = "1.0.95"
+features = []
+
+[build-dependencies.appbiotic-api-prost-serde-build]
+version = "0.1.0"
+features = []
+path = "../../../api-build/crates/prost-serde-build"
+
+[build-dependencies.appbiotic-api-protogen-spec]
+version = "0.1.0"
+features = []
+path = "../../../api-build/crates/protogen-spec"
+
+[build-dependencies.prost-build]
+version = "0.13.5"
+features = []
+
+[build-dependencies.prost-wkt-build]
+version = "0.6.0"
+features = []
+
+[build-dependencies.serde_json]
+version = "1.0.139"
+features = ["std"]
+
+[build-dependencies.tonic-build]
+version = "0.12.3"
+features = []

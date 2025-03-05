@@ -1,0 +1,15 @@
+{
+  "name": "appbiotic-api-google-protobuf-descriptor",
+  "version": "0.1.0",
+  "path": "crates/google-protobuf-descriptor",
+  "proto_package_name": "google.protobuf",
+  "compile_well_known_protos": true,
+  "protos": [
+    {
+      "dir": "../../protos",
+      "files": [
+        "google/protobuf/descriptor.proto"
+      ]
+    }
+  ]
+}
